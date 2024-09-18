@@ -13,6 +13,7 @@ use App\Http\Controllers\AuthController;
 
 Route::prefix('V1')->group(function(){
     Route::middleware(['auth.guard:user-api'])->prefix('user')->group(function (){
+        Route::post('login', [AuthController::class, 'login']);
         Route::post('/register', [AuthController::class, 'register']);
         Route::get('/products', [ProductController::class, 'index']);
         Route::get('/products/{id}', [ProductController::class, 'show']);

@@ -31,6 +31,16 @@ class AuthService
         return false;
     }
 
+    public function checkEmailIinPhone(string $email): bool|string
+    {
+        $user = User::orWhere('email', $email)
+            ->orWhere('phone', $email)
+            ->orWhere('iin', $email)
+            ->first();
+
+        return $user ? $user->email : false;
+    }
+
     public function respondWithToken(?string $token): ?array
     {
         return $token

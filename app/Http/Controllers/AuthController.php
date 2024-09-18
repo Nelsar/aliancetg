@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\Request;
 use App\Services\AuthService;
 use Illuminate\Http\JsonResponse;
@@ -21,6 +22,37 @@ class AuthController extends Controller
         $this->middleware('auth:user-api', [
             'except' => ['login', 'register']
         ]);
+    }
+
+    public function login(LoginRequest $request)
+    {
+        $getrequest = $request->validated();
+        $email = $this->authService->checkEmailIinPhone($getrequest['email']);
+
+        if(!$email) {
+            return response()->json([
+                'message' => 'Такого Email, Номера тел, ИИН не существует!',
+                'errors' => [
+                    'email' => ['Такого Email, Номера тел, ИИН не существует!']
+                ]
+            ], 422);
+        }
+
+        $getrequest['email'] = $email;
+
+        if(!$this->authService->checkStatus($getrequest)) {
+            $this->logout();
+
+            return response()->json([
+                'message' => 'Ваш акаунт был Деактивирован Администратором сайта',
+            ]);
+        }
+
+        if(!$token = $this->authService->login($getrequest)) {
+            return response()->json(['message' => 'Неавторизованный'], 401);
+        }
+
+        return response()->json($this->authService->respondWithToken($token));
     }
 
     public function register(RegisterRequest $request): JsonResponse
